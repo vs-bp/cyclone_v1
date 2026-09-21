@@ -13,7 +13,7 @@ struct GPSConfig {
     const float rate_seconds = 1.0f / rate_hz;
 
     SFE_UBLOX_GNSS gps_obj;
-} gps_config;
+} driver_gps_config;
 
 /* ------------------------------- Structures ------------------------------- */
 struct GPSData {
@@ -26,22 +26,22 @@ struct GPSData {
 /* -------------------------------- Interface ------------------------------- */
 // Initialize GPS with rate and auto update, force only I2C comms.
 void hw_gps_init() {
-  gps_config.gps_obj.begin();
-  gps_config.gps_obj.setI2COutput(COM_TYPE_UBX);
-  gps_config.gps_obj.setNavigationFrequency((uint32_t)gps_config.rate_hz);
-  gps_config.gps_obj.setAutoPVT(true);
+  driver_gps_config.gps_obj.begin();
+  driver_gps_config.gps_obj.setI2COutput(COM_TYPE_UBX);
+  driver_gps_config.gps_obj.setNavigationFrequency((uint32_t)driver_gps_config.rate_hz);
+  driver_gps_config.gps_obj.setAutoPVT(true);
 }
 
 bool hw_gps_ready() {
-  return gps_config.gps_obj.getPVT();
+  return driver_gps_config.gps_obj.getPVT();
 }
 
 GPSData hw_gps_read() {
   // Read directly through library, converting units inline.
   GPSData output;
-  output.latitude = (float)gps_config.gps_obj.getLatitude() / 10000000.0;
-  output.longitude = (float)gps_config.gps_obj.getLongitude() / 10000000.0;
-  output.altitude = (float)gps_config.gps_obj.getAltitude() / 1000.0;
-  output.siv = (uint8_t)gps_config.gps_obj.getSIV();
+  output.latitude = (float)driver_gps_config.gps_obj.getLatitude() / 10000000.0;
+  output.longitude = (float)driver_gps_config.gps_obj.getLongitude() / 10000000.0;
+  output.altitude = (float)driver_gps_config.gps_obj.getAltitude() / 1000.0;
+  output.siv = (uint8_t)driver_gps_config.gps_obj.getSIV();
   return output;
 }

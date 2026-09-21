@@ -6,6 +6,7 @@ void setup() {
         program_fv_initialization(state_fv);
         program_fv_loop(state_fv, true);
         program_fv_loop(state_fv, false);
+        program_fv_disarmed();
     #endif
 
     #ifdef ENV_GS_MAIN

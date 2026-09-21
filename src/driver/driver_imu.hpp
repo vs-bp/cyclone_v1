@@ -25,7 +25,7 @@ struct IMUConfig {
     float next_read = 0.0f;
     
     LSM6DSV16XSensor obj = LSM6DSV16XSensor(&Wire, 0xD5);
-} imu_config;
+} driver_imu_config;
 
 /* ------------------------------- Structures ------------------------------- */
 struct IMUDataSingle {
@@ -33,37 +33,39 @@ struct IMUDataSingle {
   vec3 wb; // rad/s
 };
 struct IMUDataFIFO {
-  vec4 q0;    // Unitless.
-  vec4 q1;    // Unitless.
-  vec3 eul;   // Unitless.
-  vec3 ab;    // m/(s^2).
-  vec3 wb;    // rad/s.
-  mat3 dcmbe; // Unitless.
-  mat3 dcmeb; // Unitless.
+  vec4 q0;           // Unitless.
+  vec4 q1;           // Unitless.
+  vec3 eul;          // Unitless.
+  vec3 ab;           // m/(s^2).
+  vec3 wb;           // rad/s.
+  mat3 dcmbe;        // Unitless.
+  mat3 dcmeb;        // Unitless.
+  uint32_t wb_count; // Unitless.
+  uint32_t ab_count; // Unitless.
 };
 
 /* ------------------------ Interface Implementations ----------------------- */
 // Reset, initialize accel/gyro, set accel/gyro range, 
-// set accel/gyro rate, set FIFO imu_config.
+// set accel/gyro rate, set FIFO driver_imu_config.
 void hw_imu_init() {
   uint8_t status = 0;
-  imu_config.obj.begin();
-  imu_config.obj.Device_Reset();
-  status |= imu_config.obj.Enable_X();
-  status |= imu_config.obj.Enable_G();
-  status |= imu_config.obj.Set_X_FS(imu_config.max_gs);
-  status |= imu_config.obj.Set_G_FS(imu_config.max_dps);
-  status |= imu_config.obj.Set_X_ODR(imu_config.rate_hz);
-  status |= imu_config.obj.Set_G_ODR(imu_config.rate_hz);
-  status |= imu_config.obj.FIFO_Set_X_BDR(imu_config.rate_hz);
-  status |= imu_config.obj.FIFO_Set_G_BDR(imu_config.rate_hz);
-  status |= imu_config.obj.FIFO_Set_Mode(LSM6DSV16X_STREAM_MODE);
+  driver_imu_config.obj.begin();
+  driver_imu_config.obj.Device_Reset();
+  status |= driver_imu_config.obj.Enable_X();
+  status |= driver_imu_config.obj.Enable_G();
+  status |= driver_imu_config.obj.Set_X_FS(driver_imu_config.max_gs);
+  status |= driver_imu_config.obj.Set_G_FS(driver_imu_config.max_dps);
+  status |= driver_imu_config.obj.Set_X_ODR(driver_imu_config.rate_hz);
+  status |= driver_imu_config.obj.Set_G_ODR(driver_imu_config.rate_hz);
+  status |= driver_imu_config.obj.FIFO_Set_X_BDR(driver_imu_config.rate_hz);
+  status |= driver_imu_config.obj.FIFO_Set_G_BDR(driver_imu_config.rate_hz);
+  status |= driver_imu_config.obj.FIFO_Set_Mode(LSM6DSV16X_STREAM_MODE);
 }
 
 // Returns if at least one reading is on the sensor based off the time of last
 // read and the expected read frequency.
 bool hw_imu_ready() {
-    return seconds_us() > imu_config.next_read;
+    return seconds_us() > driver_imu_config.next_read;
 }
 
 // Integrates all current FIFO data into an output rotation given an input rotation
@@ -79,30 +81,30 @@ IMUDataFIFO hw_imu_integrate(vec4 q0) {
 
     // Poll packets in IMU FIFO. Integrate them for rotation, and average their acceleration.
     uint16_t num;
-    imu_config.obj.FIFO_Get_Num_Samples(&num);
+    driver_imu_config.obj.FIFO_Get_Num_Samples(&num);
     for (uint16_t i = 0; i < num; i++) {
         uint8_t tag;
-        imu_config.obj.FIFO_Get_Tag(&tag);
+        driver_imu_config.obj.FIFO_Get_Tag(&tag);
         switch (tag) {
         case 1: {
             // Read gyro value.
             int32_t gyro[3];
-            imu_config.obj.FIFO_Get_G_Axes(gyro);
+            driver_imu_config.obj.FIFO_Get_G_Axes(gyro);
             const float mdps2rps = pi / 180000.0;
-            vec3 wb_curr = imu_config.dcm_bs * vec3(
-                (float)gyro[0]*mdps2rps*imu_config.sensitivity_dps + imu_config.bias_wb.x,
-                (float)gyro[1]*mdps2rps*imu_config.sensitivity_dps + imu_config.bias_wb.y,
-                (float)gyro[2]*mdps2rps*imu_config.sensitivity_dps + imu_config.bias_wb.z
+            vec3 wb_curr = driver_imu_config.dcm_bs * vec3(
+                (float)gyro[0]*mdps2rps*driver_imu_config.sensitivity_dps + driver_imu_config.bias_wb.x,
+                (float)gyro[1]*mdps2rps*driver_imu_config.sensitivity_dps + driver_imu_config.bias_wb.y,
+                (float)gyro[2]*mdps2rps*driver_imu_config.sensitivity_dps + driver_imu_config.bias_wb.z
             );
             // Integrate.
             float bp = wb_curr.x;
             float bq = wb_curr.y;
             float br = wb_curr.z;
             q1 = (q1 + vec4(
-                (0.5*(-q1.x*bp - q1.y*bq - q1.z*br)) * imu_config.rate_seconds,
-                (0.5*( q1.w*bp + q1.y*br - q1.z*bq)) * imu_config.rate_seconds,
-                (0.5*( q1.w*bq - q1.x*br + q1.z*bp)) * imu_config.rate_seconds,
-                (0.5*( q1.w*br + q1.x*bq - q1.y*bp)) * imu_config.rate_seconds
+                (0.5*(-q1.x*bp - q1.y*bq - q1.z*br)) * driver_imu_config.rate_seconds,
+                (0.5*( q1.w*bp + q1.y*br - q1.z*bq)) * driver_imu_config.rate_seconds,
+                (0.5*( q1.w*bq - q1.x*br + q1.z*bp)) * driver_imu_config.rate_seconds,
+                (0.5*( q1.w*br + q1.x*bq - q1.y*bp)) * driver_imu_config.rate_seconds
             )).normalize();
             // Accumulate wb alone.
             wb = wb + wb_curr;
@@ -112,10 +114,10 @@ IMUDataFIFO hw_imu_integrate(vec4 q0) {
         case 2: { 
             // Read acceleration value.
             int32_t accel[3];
-            imu_config.obj.FIFO_Get_X_Axes(accel);
+            driver_imu_config.obj.FIFO_Get_X_Axes(accel);
             // Accumulate.
             const float mg2ms = g / 1000.0;
-            ab = ab + imu_config.dcm_bs * ((vec3((float)accel[0], (float)accel[1], (float)accel[2]) * imu_config.scale_ab * mg2ms * imu_config.sensitivity_gs) + imu_config.bias_ab);
+            ab = ab + driver_imu_config.dcm_bs * ((vec3((float)accel[0], (float)accel[1], (float)accel[2]) * driver_imu_config.scale_ab * mg2ms * driver_imu_config.sensitivity_gs) + driver_imu_config.bias_ab);
             ab_count++;
             break; 
             }
@@ -130,7 +132,7 @@ IMUDataFIFO hw_imu_integrate(vec4 q0) {
     else { ab = ab / ab_count; }
 
     // Clear FIFO.
-    imu_config.obj.FIFO_Reset();
+    driver_imu_config.obj.FIFO_Reset();
 
     // Determine euler values from data.
     float qx = q1.x;
@@ -154,7 +156,7 @@ IMUDataFIFO hw_imu_integrate(vec4 q0) {
 
     // Set timer to block ready until at least one reading has
     // been collected.
-    imu_config.next_read = seconds_us() + imu_config.rate_seconds;
+    driver_imu_config.next_read = seconds_us() + driver_imu_config.rate_seconds;
 
     // Return integrated results.
     IMUDataFIFO output;
@@ -163,6 +165,8 @@ IMUDataFIFO hw_imu_integrate(vec4 q0) {
     output.eul = eul;
     output.ab = ab;
     output.wb = wb;
+    output.ab_count = ab_count;
+    output.wb_count = wb_count;
     return output;
 }
 
@@ -170,19 +174,26 @@ IMUDataFIFO hw_imu_integrate(vec4 q0) {
 IMUDataSingle hw_imu_read() {
     // Read raw data.
     int32_t accel[3], gyro[3];
-    imu_config.obj.Get_X_Axes(accel);
-    imu_config.obj.Get_G_Axes(gyro);
+    driver_imu_config.obj.Get_X_Axes(accel);
+    driver_imu_config.obj.Get_G_Axes(gyro);
 
     // Convert data into correct units and write to output struct.
     const float mg2ms = g / 1000.0;
     const float mdps2rps = pi / 180000.0;
     IMUDataSingle output;
-    output.ab = imu_config.dcm_bs * ((vec3((float)accel[0], (float)accel[1], (float)accel[2]) * imu_config.scale_ab * mg2ms * imu_config.sensitivity_gs) + imu_config.bias_ab);
-    output.wb = imu_config.dcm_bs * ((vec3((float)gyro[0], (float)gyro[1], (float)gyro[2]) * mdps2rps * imu_config.sensitivity_dps) + imu_config.bias_wb);
+    output.ab = driver_imu_config.dcm_bs * ((vec3((float)accel[0], (float)accel[1], (float)accel[2]) * driver_imu_config.scale_ab * mg2ms * driver_imu_config.sensitivity_gs) + driver_imu_config.bias_ab);
+    output.wb = driver_imu_config.dcm_bs * ((vec3((float)gyro[0], (float)gyro[1], (float)gyro[2]) * mdps2rps * driver_imu_config.sensitivity_dps) + driver_imu_config.bias_wb);
 
     // Set timer to block ready until at least one reading has
     // been collected.
-    imu_config.next_read = seconds_us() + imu_config.rate_seconds;
+    driver_imu_config.next_read = seconds_us() + driver_imu_config.rate_seconds;
 
     return output;
+}
+
+// Sets calibration values for the IMU.
+void hw_imu_set_calibration(vec3 wb_bias, vec3 ab_bias, vec3 ab_scale) {
+    driver_imu_config.bias_wb = wb_bias;
+    driver_imu_config.bias_ab = ab_bias;
+    driver_imu_config.scale_ab = ab_scale;
 }

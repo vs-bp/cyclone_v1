@@ -38,9 +38,26 @@ void program_fv_initialization(ProgramStateFV& state) {
     bool setup_mode_read_data = (setup_mode == 2) || (setup_mode == 3);
     bool setup_mode_format_data = (setup_mode == 1) || (setup_mode = 3);
     if (setup_mode_read_data) {
+        // Load data.
         hw_wifi_tx_log("Reading data.");
-        hw_psram_load();
-        // TODO read loaded PSRAM data back through wifi.
+        uint8_t bytes_read = hw_psram_load();
+
+        // TX read data over wifi.
+        const float wifi_tx_rate = 1.0f / 25.0f;
+        float wifi_tx_next = 0.0f;
+        uint32_t psram_idx = 0;
+        while (psram_idx < bytes_read) {
+            if (seconds_us() > wifi_tx_next) {
+                wifi_tx_next = seconds_us() + wifi_tx_rate;
+                ProgramStateFV packet;
+                hw_psram_copy((uint8_t*)(&packet), sizeof(ProgramStateFV), psram_idx);
+                psram_idx += sizeof(ProgramStateFV);
+                hw_wifi_tx_data((uint8_t*)(&psram_idx), sizeof(ProgramStateFV));
+            }
+        }
+
+        // Clear PSRAM for later writes.
+        hw_psram_clear();
     }
     if (setup_mode_format_data) {
         hw_wifi_tx_log("Formatting data.");

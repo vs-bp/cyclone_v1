@@ -31,11 +31,9 @@ const uint8_t CMD_WIFI_OTA_CLEAR_MODE1     = 0xA3;
 const uint8_t CMD_WIFI_OTA_CLEAR_MODE2     = 0xA4;
 const uint8_t CMD_WIFI_OTA_CLEAR_MODE3     = 0xA5;
 // Ground station LoRa transmission commands.
-const uint8_t CMD_LORA_DEBUG               = 0xC0;
-const uint8_t CMD_LORA_ARMED               = 0xC1;
-const uint8_t CMD_LORA_DISARMED            = 0xC2;
-const uint8_t CMD_LORA_HITL_ENABLE         = 0xC3;
-const uint8_t CMD_LORA_HITL_DISABLE        = 0xC4;
+const uint8_t CMD_LORA_BREAKLOOP           = 0xC0;
+const uint8_t CMD_LORA_HITL_ENABLE         = 0xC1;
+const uint8_t CMD_LORA_HITL_DISABLE        = 0xC2;
 
 // Universal I2C address for CAM board on any hardware.
 const uint8_t I2C_CAM_ADDRESS = 0x55;

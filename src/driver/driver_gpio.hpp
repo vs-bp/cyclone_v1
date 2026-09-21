@@ -7,6 +7,17 @@
 #pragma once
 #include <core/core.hpp>
 
+struct GPIOConfig {
+  float timer_pyro1 = -1.0f;
+  float timer_pyro2 = -1.0f;
+  float timer_pyro3 = -1.0f;
+  float timer_pyro4 = -1.0f;
+  bool state_pyro1 = false;
+  bool state_pyro2 = false;
+  bool state_pyro3 = false;
+  bool state_pyro4 = false;
+} driver_gpio_config;
+
 /* -------------------------------- Interface ------------------------------- */
 // Generic.
 void hw_gpio_init() {
@@ -40,25 +51,20 @@ bool hw_gpio_pyro1_cont() { return digitalRead(PN_PYRO1_SENS) == HIGH; }
 bool hw_gpio_pyro2_cont() { return digitalRead(PN_PYRO2_SENS) == HIGH; }
 bool hw_gpio_pyro3_cont() { return digitalRead(PN_PYRO3_SENS) == HIGH; }
 bool hw_gpio_pyro4_cont() { return digitalRead(PN_PYRO4_SENS) == HIGH; }
-void hw_gpio_pyro1_fire() { digitalWrite(PN_PYRO1_ENA, HIGH); }
-void hw_gpio_pyro2_fire() { digitalWrite(PN_PYRO2_ENA, HIGH); }
-void hw_gpio_pyro3_fire() { digitalWrite(PN_PYRO3_ENA, HIGH); }
-void hw_gpio_pyro4_fire() { digitalWrite(PN_PYRO4_ENA, HIGH); }
-void hw_gpio_pyro1_disable() { digitalWrite(PN_PYRO1_ENA, LOW); }
-void hw_gpio_pyro2_disable() { digitalWrite(PN_PYRO2_ENA, LOW); }
-void hw_gpio_pyro3_disable() { digitalWrite(PN_PYRO3_ENA, LOW); }
-void hw_gpio_pyro4_disable() { digitalWrite(PN_PYRO4_ENA, LOW); }
-void hw_gpio_pyro_all_fire() {
-  hw_gpio_pyro1_fire();
-  hw_gpio_pyro2_fire();
-  hw_gpio_pyro3_fire();
-  hw_gpio_pyro4_fire();
-}
-void hw_gpio_pyro_all_disable() {
-  hw_gpio_pyro1_disable();
-  hw_gpio_pyro2_disable();
-  hw_gpio_pyro3_disable();
-  hw_gpio_pyro4_disable();
+void hw_gpio_pyro1_fire(float time) { digitalWrite(PN_PYRO1_ENA, HIGH); driver_gpio_config.timer_pyro1 = seconds_us() + time; driver_gpio_config.state_pyro1 = true; }
+void hw_gpio_pyro2_fire(float time) { digitalWrite(PN_PYRO2_ENA, HIGH); driver_gpio_config.timer_pyro2 = seconds_us() + time; driver_gpio_config.state_pyro2 = true; }
+void hw_gpio_pyro3_fire(float time) { digitalWrite(PN_PYRO3_ENA, HIGH); driver_gpio_config.timer_pyro3 = seconds_us() + time; driver_gpio_config.state_pyro3 = true; }
+void hw_gpio_pyro4_fire(float time) { digitalWrite(PN_PYRO4_ENA, HIGH); driver_gpio_config.timer_pyro4 = seconds_us() + time; driver_gpio_config.state_pyro4 = true; }
+void hw_gpio_pyro1_disable() { digitalWrite(PN_PYRO1_ENA, LOW); driver_gpio_config.state_pyro1 = false; }
+void hw_gpio_pyro2_disable() { digitalWrite(PN_PYRO2_ENA, LOW); driver_gpio_config.state_pyro2 = false; }
+void hw_gpio_pyro3_disable() { digitalWrite(PN_PYRO3_ENA, LOW); driver_gpio_config.state_pyro3 = false; }
+void hw_gpio_pyro4_disable() { digitalWrite(PN_PYRO4_ENA, LOW); driver_gpio_config.state_pyro4 = false; }
+void hw_gpio_pyro_check_timers() {
+  float time = seconds_us();
+  if (driver_gpio_config.state_pyro1) { if (time > driver_gpio_config.timer_pyro1) hw_gpio_pyro1_disable(); }
+  if (driver_gpio_config.state_pyro2) { if (time > driver_gpio_config.timer_pyro2) hw_gpio_pyro2_disable(); }
+  if (driver_gpio_config.state_pyro3) { if (time > driver_gpio_config.timer_pyro3) hw_gpio_pyro3_disable(); }
+  if (driver_gpio_config.state_pyro4) { if (time > driver_gpio_config.timer_pyro4) hw_gpio_pyro4_disable(); }
 }
 
 // Battery.

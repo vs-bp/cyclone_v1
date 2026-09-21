@@ -36,7 +36,7 @@ void program_gs_loop(ProgramStateGS state) {
             LoRaPacketPacked packet;
             uint8_t bytes = hw_lora_receive_finish(packet.buffer, 8);
             if (bytes != 8) hw_cam_serial_print("[GS] Invalid LoRa packet RX.\n");
-            else state.rx_lora = packet.unpack();
+            else state.rx_lora = unpack_lora(packet);
         }
         
         // Handle serial commands.
@@ -46,9 +46,7 @@ void program_gs_loop(ProgramStateGS state) {
         uint8_t cmd = hw_cam_serial_query();
         switch (cmd) {
             case CMD_GENERIC_NONE            : { break; }
-            case CMD_LORA_DEBUG        : { hw_lora_transmit_byte(CMD_LORA_DEBUG); hw_cam_serial_clear(); hw_cam_serial_print("[MAIN] TX DISARMED state. \n"); break; }
-            case CMD_LORA_ARMED        : { hw_lora_transmit_byte(CMD_LORA_ARMED); hw_cam_serial_clear(); hw_cam_serial_print("[MAIN] TX ARMED state. \n"); break; }
-            case CMD_LORA_DISARMED     : { hw_lora_transmit_byte(CMD_LORA_DISARMED); hw_cam_serial_clear(); hw_cam_serial_print("[MAIN] TX DEBUG state. \n"); break; }
+            case CMD_LORA_BREAKLOOP        : { hw_lora_transmit_byte(CMD_LORA_BREAKLOOP); hw_cam_serial_clear(); hw_cam_serial_print("[MAIN] TX BREAKLOOP command. \n"); break; }
             case CMD_LORA_HITL_ENABLE  : { hw_lora_transmit_byte(CMD_LORA_HITL_ENABLE); hw_cam_serial_clear(); hw_cam_serial_print("[MAIN] TX HITL enable. \n"); break; }
             case CMD_LORA_HITL_DISABLE : { hw_lora_transmit_byte(CMD_LORA_HITL_DISABLE); hw_cam_serial_clear(); hw_cam_serial_print("[MAIN] TX HITL disable. \n"); break; }
             case CMD_WIFI_OTA_CLEAR_MODE0 : { hw_wifi_tx_cmd(CMD_WIFI_OTA_CLEAR_MODE0); hw_cam_serial_clear(); hw_cam_serial_print("[MAIN] TX setup mode 1 (Nread, Nfmt).\n"); break; }

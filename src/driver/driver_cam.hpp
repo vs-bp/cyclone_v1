@@ -41,6 +41,6 @@ void hw_cam_serial_print(String text) {
 
 // I2C Request to CAM always returns last byte over serial.
 uint8_t hw_cam_serial_query() {
-  if(Wire.requestFrom(I2C_CAM_ADDRESS, 1) == 0) return CMD_GENERIC_NONE;
+  if(Wire.requestFrom(I2C_CAM_ADDRESS, uint8_t(1)) == 0) return CMD_GENERIC_NONE;
   else return Wire.read();
 }

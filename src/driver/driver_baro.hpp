@@ -21,7 +21,7 @@ struct BaroConfig {
     float rate_seconds = 1.0f / rate_hz;
     float next_read = 0.0f;
     float bias = 0.0f; 
-} baro_config;
+} driver_baro_config;
 
 /* ------------------------------- Structures ------------------------------- */
 struct BaroData { float altitude; };
@@ -34,7 +34,7 @@ void hw_baro_init() {}
 // Returns if at least one reading is on the sensor based off the time of last
 // read and the expected read frequency.
 bool hw_baro_ready() {
-    return seconds_us() > baro_config.next_read;
+    return seconds_us() > driver_baro_config.next_read;
 }
 
 // Return current altitude reading from sensor, halts for conversion time.
@@ -42,7 +42,7 @@ BaroData hw_baro_read() {
     // Altimeter OSR and Channel setting command,
     // followed by altitude read command.
     Wire.beginTransmission(0x77);
-    Wire.write(0b01000000 | baro_config.BARO_OSR_256);
+    Wire.write(0b01000000 | driver_baro_config.BARO_OSR_256);
     Wire.endTransmission(true);
     Wire.beginTransmission(0x77);
     Wire.write(0x31);
@@ -57,11 +57,16 @@ BaroData hw_baro_read() {
     data[2] = Wire.read();
     BaroData output;
     output.altitude = (float)((data[0] & 0x0F)*65536 + (data[1]*256) + data[2]) / 100.0f;
-    output.altitude += baro_config.bias;
+    output.altitude += driver_baro_config.bias;
     
     // Reset ready timer.
-    baro_config.next_read = seconds_us() + baro_config.rate_seconds;
+    driver_baro_config.next_read = seconds_us() + driver_baro_config.rate_seconds;
 
     // Return.
     return output;
+}
+
+// Sets "zero" altitude for the altimeter.
+void hw_baro_set_calibration(float altitude) {
+    driver_baro_config.bias = -altitude;
 }
