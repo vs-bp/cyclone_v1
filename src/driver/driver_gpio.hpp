@@ -4,30 +4,10 @@
 // State-independent interface for functions that run directly off of GPIOS,
 // following hw_... naming convention and patterns of other interfaces.
 /* -------------------------------------------------------------------------- */
-#ifndef MAIN_DRIVER_GPIO
-#define MAIN_DRIVER_GPIO
-#include <core.hpp>
+#pragma once
+#include <core/core.hpp>
 
-/* -------------------------- Interface Definitions ------------------------- */
-void hw_gpio_init();
-void hw_gpio_blink(uint32_t count, uint32_t delay_ms);
-bool hw_gpio_pyro1_cont();
-bool hw_gpio_pyro2_cont();
-bool hw_gpio_pyro3_cont();
-bool hw_gpio_pyro4_cont();
-void hw_gpio_pyro1_fire();
-void hw_gpio_pyro2_fire();
-void hw_gpio_pyro3_fire();
-void hw_gpio_pyro4_fire();
-void hw_gpio_pyro1_disable();
-void hw_gpio_pyro2_disable();
-void hw_gpio_pyro3_disable();
-void hw_gpio_pyro4_disable();
-void hw_gpio_pyro_all_fire();
-void hw_gpio_pyro_all_disable();
-float hw_bat_volt();
-
-/* ------------------------ Interface Implementations ----------------------- */
+/* -------------------------------- Interface ------------------------------- */
 // Generic.
 void hw_gpio_init() {
   pinMode(PN_MCU_LED, OUTPUT);
@@ -45,6 +25,7 @@ void hw_gpio_init() {
   pinMode(PN_PYRO3_SENS, INPUT);
   pinMode(PN_PYRO4_SENS, INPUT);
 }
+
 // LED.
 void hw_gpio_blink(uint32_t count, uint32_t delay_ms) {
   for (uint32_t i = 0; i < count; i++) {
@@ -52,6 +33,7 @@ void hw_gpio_blink(uint32_t count, uint32_t delay_ms) {
     digitalWrite(PN_MCU_LED, LOW); delay(delay_ms);
   }
 }
+
 // PYRO.
 bool hw_gpio_pyro1_cont() { return digitalRead(PN_PYRO1_SENS) == HIGH; }
 bool hw_gpio_pyro2_cont() { return digitalRead(PN_PYRO2_SENS) == HIGH; }
@@ -80,5 +62,3 @@ void hw_gpio_pyro_all_disable() {
 
 // Battery.
 float hw_bat_volt() { return (float)analogRead(PN_BAT_VOLT) * 0.004833984375; }
-
-#endif

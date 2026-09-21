@@ -4,10 +4,8 @@
 // Configuration, state, and interface for the LSM6DSVETR, following naming
 // convention and patterns of other interfaces.
 /* -------------------------------------------------------------------------- */
-#ifndef MAIN_DRIVER_IMU
-#define MAIN_DRIVER_IMU
-#include <core.hpp>
-#include <LSM6DSV16XSensor.h>
+#pragma once
+#include <core/core.hpp>
 
 /* ---------------------------- State and Config ---------------------------- */
 struct IMUConfig {
@@ -35,18 +33,14 @@ struct IMUDataSingle {
   vec3 wb; // rad/s
 };
 struct IMUDataFIFO {
-  vec4 q0;  // Unitless.
-  vec4 q1;  // Unitless.
-  vec3 eul; // Unitless.
-  vec3 ab;  // m/(s^2).
-  vec3 wb;  // rad/s.
+  vec4 q0;    // Unitless.
+  vec4 q1;    // Unitless.
+  vec3 eul;   // Unitless.
+  vec3 ab;    // m/(s^2).
+  vec3 wb;    // rad/s.
+  mat3 dcmbe; // Unitless.
+  mat3 dcmeb; // Unitless.
 };
-
-/* -------------------------- Interface Definitions ------------------------- */
-void hw_imu_init();
-bool hw_imu_ready();
-IMUDataFIFO hw_imu_integrate(vec4 q0);
-IMUDataSingle hw_imu_read();
 
 /* ------------------------ Interface Implementations ----------------------- */
 // Reset, initialize accel/gyro, set accel/gyro range, 
@@ -65,11 +59,13 @@ void hw_imu_init() {
   status |= imu_config.obj.FIFO_Set_G_BDR(imu_config.rate_hz);
   status |= imu_config.obj.FIFO_Set_Mode(LSM6DSV16X_STREAM_MODE);
 }
+
 // Returns if at least one reading is on the sensor based off the time of last
 // read and the expected read frequency.
 bool hw_imu_ready() {
     return seconds_us() > imu_config.next_read;
 }
+
 // Integrates all current FIFO data into an output rotation given an input rotation
 // and an averaged body acceleration from all readings. 
 // (Which assumes the rotation was small and the body axes equal initial body axes throughout)
@@ -147,7 +143,15 @@ IMUDataFIFO hw_imu_integrate(vec4 q0) {
         (-pi/2) + 2*atan2(sqrt(1+t1), sqrt(1-t1)),
         atan2(2*(qw*qz + qx*qy), 1-2*(qy*qy + qz*qz))
     );
-    
+
+    // Set direction cosine matrices from data.
+    mat3 dcmbe = mat3(
+        vec3(qw*qw + qx*qx - qy*qy - qz*qz, 2.0f*(qx*qy + qw*qz), 2.0f*(qx*qz - qw*qy)),
+        vec3(2.0f*(qx*qy - qw*qz), qw*qw - qx*qx + qy*qy - qz*qz, 2.0f*(qy*qz + qw*qx)),
+        vec3(2.0f*(qx*qz + qw*qy), 2.0f*(qy*qz - qw*qz), qw*qw - qx*qx - qy*qy + qz*qz)
+    );
+    mat3 dcmeb = dcmbe.transpose();
+
     // Set timer to block ready until at least one reading has
     // been collected.
     imu_config.next_read = seconds_us() + imu_config.rate_seconds;
@@ -161,6 +165,7 @@ IMUDataFIFO hw_imu_integrate(vec4 q0) {
     output.wb = wb;
     return output;
 }
+
 // Single FIFO-less data read on IMU.
 IMUDataSingle hw_imu_read() {
     // Read raw data.
@@ -181,5 +186,3 @@ IMUDataSingle hw_imu_read() {
 
     return output;
 }
-
-#endif

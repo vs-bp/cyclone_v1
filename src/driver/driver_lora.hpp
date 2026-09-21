@@ -4,10 +4,8 @@
 // Configuration, state, and interface for the lora module, following
 // naming convention and patterns of other interfaces.
 /* -------------------------------------------------------------------------- */
-#ifndef MAIN_DRIVER_LORA
-#define MAIN_DRIVER_LORA
-#include <core.hpp>
-#include <RadioLib.h>
+#pragma once
+#include <core/core.hpp>
 
 /* ---------------------------- State and Config ---------------------------- */
 struct LoRaConfig {
@@ -28,12 +26,6 @@ struct LoRaConfig {
     bool action_complete = false;
     bool transmit_mode = false;
 } lora_config;
-
-/* -------------------------- Interface Definitions ------------------------- */
-void hw_lora_init();
-bool hw_lora_transmit_action_complete();
-bool hw_lora_receive_action_complete();
-void hw_lora_clear_action();
 
 /* ------------------------ Interface Implementations ----------------------- */
 // Init function defines DIO1 interrupt as just setting action complete flag to true.
@@ -59,10 +51,22 @@ void hw_lora_init() {
   lora_config.lora_obj.setDio1Action(int_dio1);
   lora_config.lora_obj.startReceive();
 }
+
+// Returns true if a new transmission is possible.
+bool hw_lora_ready() { return (!lora_config.action_complete) && (!lora_config.transmit_mode); }
+
+// Transmits the given buffer, does nothing if LoRa not ready.
+void hw_lora_transmit(uint8_t* buffer, uint32_t size) {
+  if (!hw_lora_ready()) return;
+  lora_config.transmit_mode = true;
+  lora_config.action_complete = false;
+  lora_config.lora_obj.startTransmit(buffer, size);
+}
+
 // Returns true if a transmission of said type is complete and hasn't been cleared yet.
 bool hw_lora_transmit_action_complete() { return lora_config.action_complete && lora_config.transmit_mode; }
 bool hw_lora_receive_action_complete() { return lora_config.action_complete && !lora_config.transmit_mode; }
-// Clears transmission complete so above functions return false.
-void hw_lora_clear_action() { lora_config.action_complete = false; }
 
-#endif
+// Clears transmission complete so above functions return false.
+// TODO.
+void hw_lora_clear_action() { lora_config.action_complete = false; }

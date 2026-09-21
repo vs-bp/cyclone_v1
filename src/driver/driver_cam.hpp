@@ -4,8 +4,8 @@
 // Configuration, state, and interface for the camera board, following
 // naming convention and patterns of other interfaces.
 /* -------------------------------------------------------------------------- */
-#ifndef MAIN_DRIVER_CAM
-#define MAIN_DRIVER_CAM
-// TODO.
+#pragma once
+#include <core/core.hpp>
 
-#endif
+void hw_cam_init() {}
+// TODO.

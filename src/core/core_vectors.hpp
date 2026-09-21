@@ -1,50 +1,9 @@
+#pragma once
+#include <Arduino.h>
+
 /* -------------------------------------------------------------------------- */
-/*                                  core.hpp                                  */
+/*                                 Vector Math                                */
 /* -------------------------------------------------------------------------- */
-// Includes and math functions.
-/* -------------------------------------------------------------------------- */
-#ifndef MAIN_CORE
-#define MAIN_CORE
-#include <Wire.h>
-#include <WiFi.h>
-
-/* ---------------------------------- Pins ---------------------------------- */
-#define PN_SPI_SCK GPIO_NUM_15
-#define PN_SPI_MOSI GPIO_NUM_16
-#define PN_SPI_MISO GPIO_NUM_17
-#define PN_RF_NSS GPIO_NUM_6
-#define PN_RF_NRST GPIO_NUM_7
-#define PN_RF_DIO1 GPIO_NUM_3
-#define PN_RF_BUSY GPIO_NUM_10
-#define PN_RF_SW GPIO_NUM_11
-#define PN_GPIO3 GPIO_NUM_5
-#define PN_GPIO4 GPIO_NUM_4
-#define PN_GPIO5 GPIO_NUM_8
-#define PN_GPIO6 GPIO_NUM_18
-#define PN_PYRO1_ENA GPIO_NUM_38
-#define PN_PYRO2_ENA GPIO_NUM_39
-#define PN_PYRO3_ENA GPIO_NUM_41
-#define PN_PYRO4_ENA GPIO_NUM_2
-#define PN_PYRO1_SENS GPIO_NUM_12
-#define PN_PYRO2_SENS GPIO_NUM_40
-#define PN_PYRO3_SENS GPIO_NUM_42
-#define PN_PYRO4_SENS GPIO_NUM_1
-#define PN_MCU_LED GPIO_NUM_9
-#define PN_BAT_VOLT GPIO_NUM_13
-#define PN_I2C_SCL GPIO_NUM_21
-#define PN_I2C_SDA GPIO_NUM_14
-
-/* -------------------------------- Constants ------------------------------- */
-const float pi = 3.1415926535897932385f;
-const float g = 9.80665f;
-const float INF = 1.0f / 0.0f;
-const float uint32_max = 4294967295;
-
-/* ------------------------------- Timekeeping ------------------------------ */
-float seconds_us() { return (float)micros() / 1000000.0f; }
-float seconds_ms() { return (float)millis() / 1000.0f; }
-
-/* ------------------------------- Vector Math ------------------------------ */
 struct vec4 { 
   // Definition.
   float w, x, y, z; 
@@ -173,7 +132,11 @@ struct mat3 {
 
   // Helper functions.
   // TODO Unimplemented.
-  // mat2 transpose() const { return mat2(vec2(r[0].x, r[1].x), vec2(r[0].y, r[1].y)); }
+  mat3 transpose() const { return mat3(
+    vec3(r[0].x, r[1].x, r[2].x),
+    vec3(r[0].y, r[1].y, r[2].y),
+    vec3(r[0].z, r[1].z, r[2].z)
+  ); }
   // mat2 inverse() const { return mat2(vec2(r[1].y, -r[0].y), vec2(-r[1].x, r[0].x))*(1.0/(r[0].x*r[1].y-r[0].y*r[1].x)); }
 };
 
@@ -202,5 +165,3 @@ struct lkf2 {
     p1 = (I-k1)*p1m;
   }
 };
-
-#endif

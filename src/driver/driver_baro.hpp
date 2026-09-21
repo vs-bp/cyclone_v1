@@ -4,9 +4,8 @@
 // Configuration, state, and interface for the HP203B, following
 // naming convention and patterns of other interfaces.
 /* -------------------------------------------------------------------------- */
-#ifndef MAIN_DRIVER_BARO
-#define MAIN_DRIVER_BARO
-#include <core.hpp>
+#pragma once
+#include <core/core.hpp>
 
 /* ---------------------------- State and Config ---------------------------- */
 struct BaroConfig { 
@@ -27,20 +26,18 @@ struct BaroConfig {
 /* ------------------------------- Structures ------------------------------- */
 struct BaroData { float altitude; };
 
-/* -------------------------- Interface Definitions ------------------------- */
-void hw_baro_init();
-bool hw_baro_ready();
-BaroData hw_baro_read();
 
 /* ------------------------ Interface Implementations ----------------------- */
-void hw_baro_init() {
-    // No intiailization code for now.
-}
+// No intiailization code for now.
+void hw_baro_init() {}
+
 // Returns if at least one reading is on the sensor based off the time of last
 // read and the expected read frequency.
 bool hw_baro_ready() {
     return seconds_us() > baro_config.next_read;
 }
+
+// Return current altitude reading from sensor, halts for conversion time.
 BaroData hw_baro_read() {
     // Altimeter OSR and Channel setting command,
     // followed by altitude read command.
@@ -68,5 +65,3 @@ BaroData hw_baro_read() {
     // Return.
     return output;
 }
-
-#endif
