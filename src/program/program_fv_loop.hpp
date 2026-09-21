@@ -40,6 +40,7 @@ void program_fv_loop(ProgramStateFV& state, bool flag_debug) {
 
             IMUDataFIFO data_imu = hw_imu_integrate(state.q);
             state.ab = data_imu.ab;
+            state.wb = data_imu.wb;
             state.dcmbe = data_imu.dcmbe;
             state.dcmeb = data_imu.dcmeb;
             state.q = data_imu.q1;
@@ -107,7 +108,7 @@ void program_fv_loop(ProgramStateFV& state, bool flag_debug) {
 
             // Attempt transmit of packed data.
             // Does nothing if radio busy.
-            hw_lora_transmit(buffer, 8);
+            hw_lora_transmit_buffer(buffer, 8);
         }
 
         // TODO Wifi TX.

@@ -41,6 +41,12 @@ void hw_wifi_tx_string(String text) {
     wifi_config.udp_obj.endPacket();
 }
 
+void hw_wifi_tx_cmd(uint8_t cmd_byte) {
+    wifi_config.udp_obj.beginPacket(wifi_config.udp_broadcast_ip, wifi_config.udp_broadcast_port);
+    wifi_config.udp_obj.write(cmd_byte);
+    wifi_config.udp_obj.endPacket();
+}
+
 uint8_t hw_wifi_rx_byte() {
   int udp_bytes = wifi_config.udp_obj.parsePacket();
   if (udp_bytes > 0) { return wifi_config.udp_obj.read(); }
@@ -57,4 +63,8 @@ void hw_wifi_begin_ota(String board_name) {
 
 void hw_wifi_handle_ota() {
     ArduinoOTA.handle();
+}
+
+bool hw_wifi_connected() {
+    return WiFi.status() == WL_CONNECTED;
 }

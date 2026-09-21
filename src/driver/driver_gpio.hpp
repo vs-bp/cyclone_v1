@@ -24,6 +24,7 @@ void hw_gpio_init() {
   pinMode(PN_PYRO2_SENS, INPUT);
   pinMode(PN_PYRO3_SENS, INPUT);
   pinMode(PN_PYRO4_SENS, INPUT);
+  Wire.begin(PN_I2C_SDA, PN_I2C_SCL, 400000);
 }
 
 // LED.

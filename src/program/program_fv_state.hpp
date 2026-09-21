@@ -6,9 +6,10 @@
 /* -------------------------------------------------------------------------- */
 struct ProgramStateFV {
     // Fundamental state.
+    vec3 ab = vec3(0.0f, 0.0f, 0.0f);
+    vec3 wb = vec3(0.0f, 0.0f, 0.0f);
     vec3 xe = vec3(0.0f, 0.0f, 0.0f);
     vec3 ve = vec3(0.0f, 0.0f, 0.0f);
-    vec3 ab = vec3(0.0f, 0.0f, 0.0f);
     vec3 ae = vec3(0.0f, 0.0f, 0.0f); 
     vec4 q = vec4(1.0f, 0.0f, 0.0f, 0.0f);
     vec3 eul_curr = vec3(0.0f, 0.0f, 0.0f);
@@ -31,4 +32,7 @@ struct ProgramStateFV {
     float latitude = 0.0f;
     float longitude = 0.0f;
     uint8_t siv = 0;
+
+    // Control deflections.
+    float canard_angle = 0.0f;
 };

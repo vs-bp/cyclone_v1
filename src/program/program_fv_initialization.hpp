@@ -27,9 +27,9 @@ void program_fv_initialization(ProgramStateFV& state) {
     }
 
     // Initialize all driver modules.
-    hw_baro_init();
-    hw_cam_init();
     hw_gpio_init();
+    hw_baro_init();
+    hw_cam_init(true);
     hw_gps_init();
     hw_imu_init();
     hw_lora_init();

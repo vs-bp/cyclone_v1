@@ -55,12 +55,15 @@ void hw_lora_init() {
 // Returns true if a new transmission is possible.
 bool hw_lora_ready() { return (!lora_config.action_complete) && (!lora_config.transmit_mode); }
 
-// Transmits the given buffer, does nothing if LoRa not ready.
-void hw_lora_transmit(uint8_t* buffer, uint32_t size) {
+// Transmits the given buffer or byte, does nothing if LoRa not ready.
+void hw_lora_transmit_buffer(uint8_t* buffer, uint32_t size) {
   if (!hw_lora_ready()) return;
   lora_config.transmit_mode = true;
   lora_config.action_complete = false;
   lora_config.lora_obj.startTransmit(buffer, size);
+}
+void hw_lora_transmit_byte(uint8_t byte) {
+  hw_lora_transmit_buffer(&byte, 1);
 }
 
 // Returns true if a transmission of said type is complete and hasn't been cleared yet.

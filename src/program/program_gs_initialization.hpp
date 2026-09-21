@@ -6,47 +6,36 @@
 /*                               Initialization                               */
 /* -------------------------------------------------------------------------- */
 void program_gs_initialization(ProgramStateGS& state) {
-    // TODO.
+    // Initial delay to allow CAM to stabilize and then
+    // transmit to put into GS mode.
+    hw_gpio_init();
+    delay(5000);
+    hw_cam_init(false);
     
     // Intialize wifi and do initial setup loop.
-    // Loop is exited with a "mode setting" command over WiFi.
-    // Mode 0: Exit loop.
-    // Mode 1: Exit loop, format PSRAM data in flash.
-    // Mode 2: Exit loop, read PSRAM flash data over wifi.
-    // Mode 3: Exit loop, read PSRAM flash data over wifi, format PSRAM data in flash.
-    uint32_t setup_mode;
-    hw_wifi_on_ap("CYCLONE_V1_FV", "cyclone");
-    hw_wifi_begin_ota("cyclone_v1_fv");
+    // Loop is exited with a "mode setting" command over relayed serial from CAM board.
+    hw_wifi_on_ap("CYCLONE_V1_GS", "cyclone");
+    hw_wifi_begin_ota("cyclone_v1_gs");
     while (true) {
         hw_gpio_blink(1, 50);
-        hw_wifi_tx_string("Awaiting OTA.");
+        hw_cam_serial_print("[GS] Awaiting OTA.\n");
         hw_wifi_handle_ota();
-        if (hw_wifi_rx_byte() == CMD_WIFI_OTA_CLEAR_MODE0) { hw_wifi_tx_string("Setup mode set to 0."); setup_mode = 0; break; }
-        if (hw_wifi_rx_byte() == CMD_WIFI_OTA_CLEAR_MODE1) { hw_wifi_tx_string("Setup mode set to 1."); setup_mode = 1; break; }
-        if (hw_wifi_rx_byte() == CMD_WIFI_OTA_CLEAR_MODE2) { hw_wifi_tx_string("Setup mode set to 2."); setup_mode = 2; break; }
-        if (hw_wifi_rx_byte() == CMD_WIFI_OTA_CLEAR_MODE3) { hw_wifi_tx_string("Setup mode set to 3."); setup_mode = 3; break; }
+        if (hw_cam_serial_query() == CMD_SERIAL_OTA_CLEAR) break;
         delay(1000);
     }
+    hw_cam_serial_clear();
+    hw_wifi_tx_string("[GS] OTA cleared.\n");
 
-    // Initialize all driver modules.
-    hw_baro_init();
-    hw_cam_init();
-    hw_gpio_init();
-    hw_gps_init();
-    hw_imu_init();
+    // Initialize relevant driver modules.
     hw_lora_init();
-    hw_psram_init();
 
-    // Handle setup mode.
-    bool setup_mode_read_data = (setup_mode == 2) || (setup_mode == 3);
-    bool setup_mode_format_data = (setup_mode == 1) || (setup_mode = 3);
-    if (setup_mode_read_data) {
-        hw_wifi_tx_string("Reading data.");
-        hw_psram_load();
-        // TODO read loaded PSRAM data back through wifi.
+    // Switch WiFi to station mode.
+    hw_wifi_off();
+    delay(1000);
+    hw_wifi_on_client("CYCLONE_V1_FV", "cyclone");
+    while (!hw_wifi_connected()) {
+        hw_cam_serial_print("[GS] Awaiting WiFi connection to FV.\n");
+        delay(1000);
     }
-    if (setup_mode_format_data) {
-        hw_wifi_tx_string("Formatting data.");
-        hw_psram_format();
-    }
+    hw_cam_serial_print("[GS] WiFi connected.\n");
 }

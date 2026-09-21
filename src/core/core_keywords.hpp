@@ -12,6 +12,9 @@ const uint8_t CMD_SERIAL_OTA_CLEAR         = 0x10;
 // Ground station CAM I2C commands.
 const uint8_t CMD_CAM_I2C_PRINT            = 0x20;
 const uint8_t CMD_CAM_I2C_CLEAR            = 0x21;
+const uint8_t CMD_CAM_I2C_MODE_GS          = 0x22;
+const uint8_t CMD_CAM_I2C_MODE_FV          = 0x23;
+const uint8_t CMD_CAM_I2C_TRIGGER          = 0x24;
 // Ground station dispay mode commands.
 const uint8_t CMD_DISPLAY_MODE_NONE        = 0x30;
 const uint8_t CMD_DISPLAY_MODE_GPS         = 0x31;
