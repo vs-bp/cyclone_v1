@@ -66,10 +66,27 @@ void hw_lora_transmit_byte(uint8_t byte) {
   hw_lora_transmit_buffer(&byte, 1);
 }
 
-// Returns true if a transmission of said type is complete and hasn't been cleared yet.
-bool hw_lora_transmit_action_complete() { return lora_config.action_complete && lora_config.transmit_mode; }
-bool hw_lora_receive_action_complete() { return lora_config.action_complete && !lora_config.transmit_mode; }
+// Returns true if a transmission/reception is complete and hasn't been cleared yet.
+bool hw_lora_transmit_pending() { return lora_config.action_complete && lora_config.transmit_mode; }
+bool hw_lora_receive_pending() { return lora_config.action_complete && !lora_config.transmit_mode; }
 
-// Clears transmission complete so above functions return false.
-// TODO.
-void hw_lora_clear_action() { lora_config.action_complete = false; }
+// Clears transmission flags and sets correct module state to accept new receptions (default)
+// or start new transmissions through hw_lora_transmit_...
+//
+// Finishing reception also outputs bytes read into buffer given.
+void hw_lora_transmit_finish() {
+  // Requires putting into receive mode again as default.
+  lora_config.lora_obj.finishTransmit();
+  lora_config.transmit_mode = false;
+  lora_config.action_complete = false;
+  lora_config.lora_obj.startReceive();
+}
+uint32_t hw_lora_receive_finish(uint8_t* buffer, uint32_t buffer_size) {
+  // Packet RX.
+  uint32_t bytes_read = lora_config.lora_obj.getPacketLength();
+  if (bytes_read > buffer_size) bytes_read = buffer_size;
+  lora_config.lora_obj.readData(buffer, bytes_read);
+
+  // Already in receive mode if packet RX complete, just clear the flag.
+  lora_config.action_complete = false;
+}

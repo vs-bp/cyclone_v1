@@ -18,3 +18,4 @@
 #include <core/core_vectors.hpp>
 #include <core/core_constants.hpp>
 #include <core/core_keywords.hpp>
+#include <core/core_packing.hpp>
