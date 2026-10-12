@@ -13,9 +13,8 @@
 #include <u-blox_structs.h>
 #include <LSM6DSV16XSensor.h>
 #include <RadioLib.h>
-#include <core/core_pins.hpp>
-#include <core/core_timing.hpp>
-#include <core/core_vectors.hpp>
-#include <core/core_constants.hpp>
-#include <core/core_keywords.hpp>
-#include <core/core_packing.hpp>
+#include <core/timing.hpp>
+#include <core/vectors.hpp>
+#include <core/constants.hpp>
+#include <core/keywords.hpp>
+#include <core/packing.hpp>

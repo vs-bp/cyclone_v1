@@ -5,19 +5,9 @@
 // naming convention and patterns of other interfaces.
 /* -------------------------------------------------------------------------- */
 #pragma once
-#include <core/core.hpp>
+#include <driver_main/base.hpp>
 
-// True or false tells camera whether it's on the
-// flight vehicle or ground station.
-void hw_cam_init(bool fv) {
-  Wire.beginTransmission(I2C_CAM_ADDRESS);
-  if (fv) Wire.write(CMD_CAM_I2C_MODE_FV);
-  else Wire.write(CMD_CAM_I2C_MODE_GS);
-  Wire.endTransmission(true);
-}
-
-// Tells camera to trigger video recording if in flight mode.
-// Does nothing in GS mode.
+// Tells camera to trigger video recording if in flight mode
 void hw_cam_trigger() {
   Wire.beginTransmission(I2C_CAM_ADDRESS);
   Wire.write(CMD_CAM_I2C_TRIGGER);

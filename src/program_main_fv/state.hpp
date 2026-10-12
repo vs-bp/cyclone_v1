@@ -1,10 +1,10 @@
 #pragma once
-#include <driver/driver.hpp>
+#include <driver_main/_driver.hpp>
 
 /* -------------------------------------------------------------------------- */
 /*                                Global State                                */
 /* -------------------------------------------------------------------------- */
-struct ProgramStateFV {
+struct ProgramStateFVMain {
     // Timing.
     float time_current = 0.0f;              // seconds.
     float time_delta = 0.0f;                // seconds.

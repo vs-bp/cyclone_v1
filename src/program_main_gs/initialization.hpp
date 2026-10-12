@@ -1,16 +1,15 @@
 #pragma once
-#include <driver/driver.hpp>
-#include <program/program_gs_state.hpp>
+#include <driver_main/_driver.hpp>
+#include <program_main_gs/state.hpp>
 
 /* -------------------------------------------------------------------------- */
 /*                               Initialization                               */
 /* -------------------------------------------------------------------------- */
-void program_gs_initialization(ProgramStateGS& state) {
+void program_gs_initialization(ProgramStateGSMain& state) {
     // Initial delay to allow CAM to stabilize and then
     // transmit to put into GS mode.
     hw_gpio_init();
     delay(5000);
-    hw_cam_init(false);
     
     // Intialize wifi and do initial setup loop.
     // Loop is exited with a "mode setting" command over relayed serial from CAM board.

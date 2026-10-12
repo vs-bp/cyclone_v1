@@ -1,11 +1,12 @@
 #pragma once
-#include <driver/driver.hpp>
+#include <driver_main/_driver.hpp>
+#include <program_main_fv/state.hpp>
 
 /* -------------------------------------------------------------------------- */
 /*                                Global State                                */
 /* -------------------------------------------------------------------------- */
-struct ProgramStateGS {
+struct ProgramStateGSMain {
     uint32_t flag_display_mode = CMD_DISPLAY_MODE_NONE;
-    ProgramStateFV rx_wifi;
+    ProgramStateFVMain rx_wifi;
     LoRaPacketUnpacked rx_lora;
 };

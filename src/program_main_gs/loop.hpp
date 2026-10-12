@@ -1,11 +1,11 @@
 #pragma once
-#include <driver/driver.hpp>
-#include <program/program_gs_state.hpp>
+#include <driver_main/_driver.hpp>
+#include <program_main_gs/state.hpp>
 
 /* -------------------------------------------------------------------------- */
 /*                                 Subroutines                                */
 /* -------------------------------------------------------------------------- */
-void __udp_handler(ProgramStateGS& state) {
+void __udp_handler(ProgramStateGSMain& state) {
     // Early exit if no packet or bytes RX.
     uint8_t udp_buffer[256];
     uint8_t udp_buffer_bytes = hw_wifi_rx_buffer(udp_buffer, 256);
@@ -19,15 +19,15 @@ void __udp_handler(ProgramStateGS& state) {
         hw_cam_serial_print(String("[FV] ") + packet_text + "\n");
     }
     // Data command case.
-    if ((udp_buffer[0] == CMD_WIFI_DATA) && (udp_buffer_bytes == sizeof(ProgramStateFV) + 1)) {
-        memcpy(&state.rx_wifi, &udp_buffer, sizeof(ProgramStateFV));
+    if ((udp_buffer[0] == CMD_WIFI_DATA) && (udp_buffer_bytes == sizeof(ProgramStateFVMain) + 1)) {
+        memcpy(&state.rx_wifi, &udp_buffer, sizeof(ProgramStateFVMain));
     }
 }
 
 /* -------------------------------------------------------------------------- */
 /*                                  Main Loop                                 */
 /* -------------------------------------------------------------------------- */
-void program_gs_loop(ProgramStateGS state) {
+void program_gs_loop(ProgramStateGSMain state) {
     while (true) {
         // Handle LoRa flags. 
         // Transmit sets back into receive, receive saves data read to state.

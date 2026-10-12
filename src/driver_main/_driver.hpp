@@ -1,0 +1,9 @@
+#pragma once
+#include <driver_main/base.hpp>
+#include <driver_main/baro.hpp>
+#include <driver_main/cam.hpp>
+#include <driver_main/gps.hpp>
+#include <driver_main/imu.hpp>
+#include <driver_main/lora.hpp>
+#include <driver_main/psram.hpp>
+#include <driver_main/wifi.hpp>

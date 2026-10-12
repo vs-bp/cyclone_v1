@@ -5,7 +5,7 @@
 // convention and patterns of other interfaces.
 /* -------------------------------------------------------------------------- */
 #pragma once
-#include <core/core.hpp>
+#include <driver_main/base.hpp>
 
 /* ---------------------------- State and Config ---------------------------- */
 struct IMUConfig {

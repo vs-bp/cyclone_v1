@@ -5,7 +5,7 @@
 // naming convention and patterns of other interfaces.
 /* -------------------------------------------------------------------------- */
 #pragma once
-#include <core/core.hpp>
+#include <driver_main/base.hpp>
 
 /* ---------------------------- State and Config ---------------------------- */
 struct BaroConfig { 
@@ -17,7 +17,7 @@ struct BaroConfig {
     const uint32_t BARO_OSR_128  = 0b00010100;
 
     uint32_t osr_setting = BARO_OSR_256;
-    float rate_hz = 1.0f / 50.0f;
+    float rate_hz = 50.0f;
     float rate_seconds = 1.0f / rate_hz;
     float next_read = 0.0f;
     float bias = 0.0f; 

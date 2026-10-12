@@ -1,11 +1,15 @@
 #pragma once
-#include <driver/driver.hpp>
-#include <program/program_fv_state.hpp>
+#include <driver_main/_driver.hpp>
+#include <program_main_fv/state.hpp>
 
 /* -------------------------------------------------------------------------- */
 /*                               Initialization                               */
 /* -------------------------------------------------------------------------- */
-void program_fv_initialization(ProgramStateFV& state) {
+void program_fv_initialization(ProgramStateFVMain& state) {
+    // Initialize basic pins. (Init before OTA allows for startup blinks.)
+    hw_gpio_init();
+    hw_gpio_blink(10, 50);
+
     // Intialize wifi and do initial setup loop.
     // Loop is exited with a "mode setting" command over WiFi.
     // Mode 0: Exit loop.
@@ -18,21 +22,21 @@ void program_fv_initialization(ProgramStateFV& state) {
         hw_gpio_blink(1, 50);
         hw_wifi_tx_log("Awaiting OTA.");
         hw_wifi_handle_ota();
-        if (hw_wifi_rx_byte() == CMD_WIFI_OTA_CLEAR_MODE0) { hw_wifi_tx_log("Setup mode set to 0."); setup_mode = 0; break; }
-        if (hw_wifi_rx_byte() == CMD_WIFI_OTA_CLEAR_MODE1) { hw_wifi_tx_log("Setup mode set to 1."); setup_mode = 1; break; }
-        if (hw_wifi_rx_byte() == CMD_WIFI_OTA_CLEAR_MODE2) { hw_wifi_tx_log("Setup mode set to 2."); setup_mode = 2; break; }
-        if (hw_wifi_rx_byte() == CMD_WIFI_OTA_CLEAR_MODE3) { hw_wifi_tx_log("Setup mode set to 3."); setup_mode = 3; break; }
+        uint8_t byte = hw_wifi_rx_byte();
+        if (byte == CMD_WIFI_OTA_CLEAR_MODE0) { hw_wifi_tx_log("Setup mode set to 0."); setup_mode = 0; break; }
+        if (byte == CMD_WIFI_OTA_CLEAR_MODE1) { hw_wifi_tx_log("Setup mode set to 1."); setup_mode = 1; break; }
+        if (byte == CMD_WIFI_OTA_CLEAR_MODE2) { hw_wifi_tx_log("Setup mode set to 2."); setup_mode = 2; break; }
+        if (byte == CMD_WIFI_OTA_CLEAR_MODE3) { hw_wifi_tx_log("Setup mode set to 3."); setup_mode = 3; break; }
         delay(1000);
     }
 
     // Initialize all driver modules.
-    hw_gpio_init();
-    hw_baro_init();
-    hw_cam_init(true);
-    hw_gps_init();
-    hw_imu_init();
-    hw_lora_init();
-    hw_psram_init();
+    // TODO Camera initialization?
+    hw_baro_init();         hw_wifi_tx_log("Barometer initialized.");
+    hw_gps_init();          hw_wifi_tx_log("GPS initialized.");
+    hw_imu_init();          hw_wifi_tx_log("IMU initialized.");
+    hw_lora_init();         hw_wifi_tx_log("LORA initialized.");
+    hw_psram_init();        hw_wifi_tx_log("PSRAM initialized.");
 
     // Handle setup mode.
     bool setup_mode_read_data = (setup_mode == 2) || (setup_mode == 3);
@@ -49,10 +53,10 @@ void program_fv_initialization(ProgramStateFV& state) {
         while (psram_idx < bytes_read) {
             if (seconds_us() > wifi_tx_next) {
                 wifi_tx_next = seconds_us() + wifi_tx_rate;
-                ProgramStateFV packet;
-                hw_psram_copy((uint8_t*)(&packet), sizeof(ProgramStateFV), psram_idx);
-                psram_idx += sizeof(ProgramStateFV);
-                hw_wifi_tx_data((uint8_t*)(&psram_idx), sizeof(ProgramStateFV));
+                ProgramStateFVMain packet;
+                hw_psram_copy((uint8_t*)(&packet), sizeof(ProgramStateFVMain), psram_idx);
+                psram_idx += sizeof(ProgramStateFVMain);
+                hw_wifi_tx_data((uint8_t*)(&psram_idx), sizeof(ProgramStateFVMain));
             }
         }
 

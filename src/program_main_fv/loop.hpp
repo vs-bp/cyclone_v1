@@ -1,10 +1,11 @@
 #pragma once
-#include <driver/driver.hpp>
+#include <driver_main/_driver.hpp>
+#include <program_main_fv/state.hpp>
 
 /* -------------------------------------------------------------------------- */
 /*                                  Main Loop                                 */
 /* -------------------------------------------------------------------------- */
-void program_fv_loop(ProgramStateFV& state, bool debug) {
+void program_fv_loop(ProgramStateFVMain& state, bool debug) {
     state.flag_debug = debug;
 
     /* ----------------------------- Initialization ----------------------------- */
@@ -104,7 +105,7 @@ void program_fv_loop(ProgramStateFV& state, bool debug) {
             // TODO.
 
             // Full state logged to PSRAM at GNC intervals when we're interested in the data. (Burn and coast phase of armed state)
-            if (!state.flag_debug && state.flag_launch && !state.flag_apogee) hw_psram_append((uint8_t*)(&state), sizeof(ProgramStateFV));
+            if (!state.flag_debug && state.flag_launch && !state.flag_apogee) hw_psram_append((uint8_t*)(&state), sizeof(ProgramStateFVMain));
         }
 
         // GPS data read and immediate attempt at LoRa transmission.
@@ -138,7 +139,7 @@ void program_fv_loop(ProgramStateFV& state, bool debug) {
         // WiFi transmission at fixed intervals when in debug mode.
         if (state.flag_debug && (seconds_us() > wifi_tx_next)) {
             wifi_tx_next = seconds_us() + wifi_tx_rate;
-            hw_wifi_tx_data((uint8_t*)(&state), sizeof(ProgramStateFV));
+            hw_wifi_tx_data((uint8_t*)(&state), sizeof(ProgramStateFVMain));
         }
 
         // LoRa flag handling.
