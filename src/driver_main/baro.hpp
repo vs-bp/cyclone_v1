@@ -17,7 +17,7 @@ struct BaroConfig {
     const uint32_t BARO_OSR_128  = 0b00010100;
 
     uint32_t osr_setting = BARO_OSR_256;
-    float rate_hz = 50.0f;
+    float rate_hz = 30.0f;
     float rate_seconds = 1.0f / rate_hz;
     float next_read = 0.0f;
     float bias = 0.0f; 

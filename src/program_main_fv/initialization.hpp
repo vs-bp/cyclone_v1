@@ -17,7 +17,7 @@ void program_fv_initialization(ProgramStateFVMain& state) {
     // Mode 2: Exit loop, read PSRAM flash data over wifi.
     // Mode 3: Exit loop, read PSRAM flash data over wifi, format PSRAM data in flash.
     uint32_t setup_mode;
-    hw_wifi_on_ap("CYCLONE_V1_FV", "cyclone", "cyclone_v1_fv");
+    hw_wifi_on_ap("CYCLONE_V1_FV", "cyclonepcb", "cyclone_v1_fv");
     while (true) {
         hw_gpio_blink(1, 50);
         hw_wifi_tx_log("Awaiting OTA.");

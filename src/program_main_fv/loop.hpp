@@ -19,10 +19,6 @@ void program_fv_loop(ProgramStateFVMain& state, bool debug) {
     }
 
     /* ---------------------------- Flags, Thresholds, and Timers ---------------------------- */
-    // Timer for wifi-logging when in debug state.
-    float wifi_tx_next = 0.0f;
-    const float wifi_tx_rate = 1.0f / 25.0f;
-
     const float threshold_pyro_fire_time = 5.0f;
     const float threshold_main_deploy = 200.0f;
     const float threshold_launch_detect_gs = 3.0f;
@@ -105,7 +101,9 @@ void program_fv_loop(ProgramStateFVMain& state, bool debug) {
             // TODO.
 
             // Full state logged to PSRAM at GNC intervals when we're interested in the data. (Burn and coast phase of armed state)
+            // Full state also logged over WiFi when in debug mode.
             if (!state.flag_debug && state.flag_launch && !state.flag_apogee) hw_psram_append((uint8_t*)(&state), sizeof(ProgramStateFVMain));
+            if (state.flag_debug) hw_wifi_tx_data((uint8_t*)(&state), sizeof(ProgramStateFVMain));
         }
 
         // GPS data read and immediate attempt at LoRa transmission.
@@ -134,12 +132,6 @@ void program_fv_loop(ProgramStateFVMain& state, bool debug) {
             // Attempt transmit of packed data.
             // Does nothing if radio busy.
             hw_lora_transmit_buffer(pack_lora(packet).buffer, 8);
-        }
-
-        // WiFi transmission at fixed intervals when in debug mode.
-        if (state.flag_debug && (seconds_us() > wifi_tx_next)) {
-            wifi_tx_next = seconds_us() + wifi_tx_rate;
-            hw_wifi_tx_data((uint8_t*)(&state), sizeof(ProgramStateFVMain));
         }
 
         // LoRa flag handling.

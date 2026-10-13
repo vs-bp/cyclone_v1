@@ -7,8 +7,8 @@
 /* -------------------------------------------------------------------------- */
 void __udp_handler(ProgramStateGSMain& state) {
     // Early exit if no packet or bytes RX.
-    uint8_t udp_buffer[256];
-    uint8_t udp_buffer_bytes = hw_wifi_rx_buffer(udp_buffer, 256);
+    uint8_t udp_buffer[1024];
+    uint8_t udp_buffer_bytes = hw_wifi_rx_buffer(udp_buffer, 1024);
     if(!udp_buffer_bytes) return;
 
     // Log command case.
@@ -19,8 +19,9 @@ void __udp_handler(ProgramStateGSMain& state) {
         hw_cam_serial_print(String("[FV] ") + packet_text + "\n");
     }
     // Data command case.
-    if ((udp_buffer[0] == CMD_WIFI_DATA) && (udp_buffer_bytes == sizeof(ProgramStateFVMain) + 1)) {
-        memcpy(&state.rx_wifi, &udp_buffer, sizeof(ProgramStateFVMain));
+    if (udp_buffer[0] == CMD_WIFI_DATA) {
+        if ((udp_buffer_bytes == sizeof(ProgramStateFVMain) + 1)) memcpy(&state.rx_wifi, &udp_buffer[1], sizeof(ProgramStateFVMain));
+        else hw_cam_serial_print("[GS] Invalid UDP Data Packet RX!\n");
     }
 }
 
@@ -76,7 +77,7 @@ void program_gs_loop(ProgramStateGSMain state) {
             // TODO Battery voltage.
             case CMD_DISPLAY_MODE_NONE       : { break; }
             case CMD_DISPLAY_MODE_GPS        : { hw_cam_serial_print("[MAIN] GPS LATLONG SIV " + String(state.rx_lora.latitude) + " " + String(state.rx_lora.longitude) + " " + String(state.rx_lora.siv) + "\n"); break; }
-            case CMD_DISPLAY_MODE_ALTITUDE   : { hw_cam_serial_print("[MAIN] ALT " + String(state.rx_lora.altitude) + "\n"); break; }
+            case CMD_DISPLAY_MODE_ALTITUDE   : { hw_cam_serial_print("[MAIN] ALT WIFI LORA" + String(state.rx_wifi.baro_curr) + String(state.rx_lora.altitude) + "\n"); break; }
             case CMD_DISPLAY_MODE_EULER      : { hw_cam_serial_print("[MAIN] EUL RPY " + String(state.rx_wifi.eul_curr.x) + " " + String(state.rx_wifi.eul_curr.y) + " " + String(state.rx_wifi.eul_curr.z) + "\n"); break; }
             case CMD_DISPLAY_MODE_ACCEL      : { hw_cam_serial_print("[MAIN] ACCEL XYZ " + String(state.rx_wifi.ab.x) + " " + String(state.rx_wifi.ab.y) + " " + String(state.rx_wifi.ab.z) + "\n"); break; }
             case CMD_DISPLAY_MODE_GYRO       : { hw_cam_serial_print("[MAIN] GYRO XYZ " + String(state.rx_wifi.wb.x) + " " + String(state.rx_wifi.wb.x) + " " + String(state.rx_wifi.wb.z) + "\n"); break; }
