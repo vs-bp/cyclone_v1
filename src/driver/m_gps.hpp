@@ -5,7 +5,7 @@
 // naming convention and patterns of other interfaces.
 /* -------------------------------------------------------------------------- */
 #pragma once
-#include <driver_main/base.hpp>
+#include <driver/m_base.hpp>
 
 /* ---------------------------------- State --------------------------------- */
 struct GPSConfig {
@@ -13,7 +13,7 @@ struct GPSConfig {
     const float rate_seconds = 1.0f / rate_hz;
 
     SFE_UBLOX_GNSS gps_obj;
-} driver_gps_config;
+} hwm_config_gps;
 
 /* ------------------------------- Structures ------------------------------- */
 struct GPSData {
@@ -25,23 +25,23 @@ struct GPSData {
 
 /* -------------------------------- Interface ------------------------------- */
 // Initialize GPS with rate and auto update, force only I2C comms.
-void hw_gps_init() {
-  driver_gps_config.gps_obj.begin();
-  driver_gps_config.gps_obj.setI2COutput(COM_TYPE_UBX);
-  driver_gps_config.gps_obj.setNavigationFrequency((uint32_t)driver_gps_config.rate_hz);
-  driver_gps_config.gps_obj.setAutoPVT(true);
+void hwm_gps_init() {
+  hwm_config_gps.gps_obj.begin();
+  hwm_config_gps.gps_obj.setI2COutput(COM_TYPE_UBX);
+  hwm_config_gps.gps_obj.setNavigationFrequency((uint32_t)hwm_config_gps.rate_hz);
+  hwm_config_gps.gps_obj.setAutoPVT(true);
 }
 
-bool hw_gps_ready() {
-  return driver_gps_config.gps_obj.getPVT();
+bool hwm_gps_ready() {
+  return hwm_config_gps.gps_obj.getPVT();
 }
 
-GPSData hw_gps_read() {
+GPSData hwm_gps_read() {
   // Read directly through library, converting units inline.
   GPSData output;
-  output.latitude = (float)driver_gps_config.gps_obj.getLatitude() / 10000000.0;
-  output.longitude = (float)driver_gps_config.gps_obj.getLongitude() / 10000000.0;
-  output.altitude = (float)driver_gps_config.gps_obj.getAltitude() / 1000.0;
-  output.siv = (uint8_t)driver_gps_config.gps_obj.getSIV();
+  output.latitude = (float)hwm_config_gps.gps_obj.getLatitude() / 10000000.0;
+  output.longitude = (float)hwm_config_gps.gps_obj.getLongitude() / 10000000.0;
+  output.altitude = (float)hwm_config_gps.gps_obj.getAltitude() / 1000.0;
+  output.siv = (uint8_t)hwm_config_gps.gps_obj.getSIV();
   return output;
 }

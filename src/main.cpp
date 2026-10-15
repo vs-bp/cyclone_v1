@@ -1,28 +1,34 @@
-#include <program_main_fv/_program.hpp>
-#include <program_main_gs/_program.hpp>
-#include <program_cam/_program.hpp>
+/* -------------------------------------------------------------------------- */
+/*                                   Preface                                  */
+/* -------------------------------------------------------------------------- */
+//
+/* --------------------------- Naming Conventions --------------------------- */
+// In general cases:
+// hwm = Main MCU-specific interface functions
+// hwc = Camera MCU-specific interface functions
+//
+// mfv = Main MCU, flight vehicle.
+// mgs = Main MCU, ground station
+// cfv = Camera MCU, flight vehicle.
+// cgs = Camera MCU, ground station
 
-void setup() {
-    // Different programs for FV and GS main boards.
-    #ifdef ENV_FV_MAIN
-        ProgramStateFVMain state_fv;
-        program_fv_initialization(state_fv);
-        program_fv_loop(state_fv, true);
-        program_fv_loop(state_fv, false);
-        program_fv_disarmed();
-    #endif
-    #ifdef ENV_GS_MAIN
-        ProgramStateGSMain state_gs;
-        program_gs_initialization(state_gs);
-        program_gs_loop(state_gs);
-    #endif
-
-    // Shared program for cam boards.
-    #ifdef ENV_CAM
-        program_cam_initialization();
-        program_cam_loop();
-    #endif
-}
-void loop() {
-    ESP.restart();
-}
+#ifdef ENV_FV_MAIN
+    #include <program_mfv.hpp>
+    void setup() { program_mfv(); }
+    void loop() { ESP.restart(); }
+#endif
+#ifdef ENV_GS_MAIN
+    #include <program_mgs.hpp>
+    void setup() { program_mgs(); }
+    void loop() { ESP.restart(); }
+#endif
+#ifdef ENV_FV_CAM
+    #include <program_cfv.hpp>
+    void setup() { program_cfv(); }
+    void loop() { ESP.restart(); }
+#endif
+#ifdef ENV_GS_CAM
+    #include <program_cgs.hpp>
+    void setup() { program_cgs(); }
+    void loop() { ESP.restart(); }
+#endif

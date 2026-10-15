@@ -9,6 +9,7 @@
 const uint8_t CMD_GENERIC_NONE             = 0x00;
 // Ground station internal mode commands.
 const uint8_t CMD_SERIAL_OTA_CLEAR         = 0x10;
+const uint8_t CMD_SERIAL_RESTART           = 0x11;
 // Ground station CAM I2C commands.
 const uint8_t CMD_CAM_I2C_PRINT            = 0x20;
 const uint8_t CMD_CAM_I2C_CLEAR            = 0x21;
@@ -16,11 +17,14 @@ const uint8_t CMD_CAM_I2C_TRIGGER          = 0x24;
 // Ground station dispay mode commands.
 const uint8_t CMD_DISPLAY_MODE_NONE        = 0x30;
 const uint8_t CMD_DISPLAY_MODE_GPS         = 0x31;
-const uint8_t CMD_DISPLAY_MODE_ALTITUDE    = 0x32;
+const uint8_t CMD_DISPLAY_MODE_BARO        = 0x32;
 const uint8_t CMD_DISPLAY_MODE_EULER       = 0x33;
 const uint8_t CMD_DISPLAY_MODE_ACCEL       = 0x34;
 const uint8_t CMD_DISPLAY_MODE_GYRO        = 0x35;
 const uint8_t CMD_DISPLAY_MODE_CONTROLS    = 0x36;
+const uint8_t CMD_DISPLAY_MODE_KALMAN      = 0x37;
+const uint8_t CMD_DISPLAY_MODE_CPL         = 0x38;
+const uint8_t CMD_DISPLAY_MODE_NET         = 0x39;
 // WiFi UDP transmission commands.
 const uint8_t CMD_WIFI_DATA                = 0xA0;
 const uint8_t CMD_WIFI_LOG                 = 0xA1;

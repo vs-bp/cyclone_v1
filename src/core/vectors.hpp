@@ -103,6 +103,7 @@ struct mat2 {
   // Helper functions.
   mat2 transpose() const { return mat2(vec2(r[0].x, r[1].x), vec2(r[0].y, r[1].y)); }
   mat2 inverse() const { return mat2(vec2(r[1].y, -r[0].y), vec2(-r[1].x, r[0].x))*(1.0/(r[0].x*r[1].y-r[0].y*r[1].x)); }
+  float determinant() const { return (r[0].x * r[1].y) - (r[0].y * r[1].x); }
 };
 struct mat3 {
   // Definition.
@@ -119,25 +120,52 @@ struct mat3 {
   mat3 operator-(const mat3 rhs) const { return mat3(r[0] - rhs.r[0], r[1] - rhs.r[1], r[2] - rhs.r[2]); }
   mat3 operator*(const float rhs) const { return mat3(r[0] * rhs, r[1] * rhs, r[2] * rhs); }
   mat3 operator/(const float rhs) const { return mat3(r[0] / rhs, r[1] / rhs, r[2] / rhs); }
-  vec3 operator*(const vec3 rhs) const { return vec3(
-    r[0].x*rhs.x + r[0].y*rhs.y + r[0].z*rhs.z,
-    r[1].x*rhs.x + r[1].y*rhs.y + r[1].z*rhs.z,
-    r[2].x*rhs.x + r[2].y*rhs.y + r[2].z*rhs.z
-  ); }
-  // TODO Unimplemented.
-  // mat3 operator*(const mat3 rhs) const { return mat3(
-  //   vec2(r[0].x*rhs.r[0].x + r[0].y*rhs.r[1].x, r[0].x*rhs.r[0].y + r[0].y*rhs.r[1].y),
-  //   vec2(r[1].x*rhs.r[0].x + r[1].y*rhs.r[1].x, r[1].x*rhs.r[0].y + r[1].y*rhs.r[1].y)
-  // ); }
+  vec3 operator*(const vec3 rhs) const { 
+    return vec3(
+      r[0].x*rhs.x + r[0].y*rhs.y + r[0].z*rhs.z,
+      r[1].x*rhs.x + r[1].y*rhs.y + r[1].z*rhs.z,
+      r[2].x*rhs.x + r[2].y*rhs.y + r[2].z*rhs.z
+    ); 
+  }
+  mat3 operator*(const mat3 rhs) const { 
+    float c11 = (r[0].x * rhs.r[0].x) + (r[0].y * rhs.r[1].x) + (r[0].z * rhs.r[2].x);
+    float c12 = (r[0].x * rhs.r[0].y) + (r[0].y * rhs.r[1].y) + (r[0].z * rhs.r[2].y);
+    float c13 = (r[0].x * rhs.r[0].z) + (r[0].y * rhs.r[1].z) + (r[0].z * rhs.r[2].z);
+    float c21 = (r[1].x * rhs.r[0].x) + (r[1].y * rhs.r[1].x) + (r[1].z * rhs.r[2].x);
+    float c22 = (r[1].x * rhs.r[0].y) + (r[1].y * rhs.r[1].y) + (r[1].z * rhs.r[2].y);
+    float c23 = (r[1].x * rhs.r[0].z) + (r[1].y * rhs.r[1].z) + (r[1].z * rhs.r[2].z);
+    float c31 = (r[2].x * rhs.r[0].x) + (r[2].y * rhs.r[1].x) + (r[2].z * rhs.r[2].x);
+    float c32 = (r[2].x * rhs.r[0].y) + (r[2].y * rhs.r[1].y) + (r[2].z * rhs.r[2].y);
+    float c33 = (r[2].x * rhs.r[0].z) + (r[2].y * rhs.r[1].z) + (r[2].z * rhs.r[2].z);
+    return mat3(
+      vec3(c11, c12, c13),
+      vec3(c21, c22, c23),
+      vec3(c31, c32, c33)
+    ); 
+  }
 
   // Helper functions.
-  // TODO Unimplemented.
-  mat3 transpose() const { return mat3(
-    vec3(r[0].x, r[1].x, r[2].x),
-    vec3(r[0].y, r[1].y, r[2].y),
-    vec3(r[0].z, r[1].z, r[2].z)
-  ); }
-  // mat2 inverse() const { return mat2(vec2(r[1].y, -r[0].y), vec2(-r[1].x, r[0].x))*(1.0/(r[0].x*r[1].y-r[0].y*r[1].x)); }
+  mat3 transpose() const { 
+    return mat3(
+      vec3(r[0].x, r[1].x, r[2].x),
+      vec3(r[0].y, r[1].y, r[2].y),
+      vec3(r[0].z, r[1].z, r[2].z)
+    ); 
+  }
+  float determinant() const {
+    mat2 m1 = mat2(vec2(r[1].y, r[1].z), vec2(r[2].y, r[2].z));
+    mat2 m2 = mat2(vec2(r[1].x, r[1].z), vec2(r[2].x, r[2].z));
+    mat2 m3 = mat2(vec2(r[1].x, r[1].y), vec2(r[2].x, r[2].y));
+    return r[0].x * m1.determinant() - r[0].y * m2.determinant() + r[0].z * m3.determinant();
+  }
+  mat3 adjoint() const {
+    return mat3(
+      vec3((r[1].y*r[2].z) - (r[1].z*r[2].y), (r[0].z*r[2].y) - (r[0].y*r[2].z), (r[0].y*r[1].z) - (r[0].z*r[1].y)),
+      vec3((r[1].z*r[2].x) - (r[1].x*r[2].z), (r[0].x*r[2].z) - (r[0].z*r[2].x), (r[0].z*r[1].x) - (r[0].x*r[1].z)),
+      vec3((r[1].x*r[2].y) - (r[1].y*r[2].x), (r[0].y*r[2].x) - (r[0].x*r[2].y), (r[0].x*r[1].y) - (r[0].y*r[1].x))
+    );
+  }
+  mat3 inverse() const { return adjoint() * (1.0f / determinant()); }
 };
 
 // -====================- Filtering -====================-

@@ -1,0 +1,10 @@
+#pragma once
+#include <driver/m_base.hpp>
+#include <driver/m_baro.hpp>
+#include <driver/m_cam.hpp>
+#include <driver/m_gps.hpp>
+#include <driver/m_imu.hpp>
+#include <driver/m_lora.hpp>
+#include <driver/m_psram.hpp>
+#include <driver/m_wifi.hpp>
+#include <driver/c_i2c.hpp>

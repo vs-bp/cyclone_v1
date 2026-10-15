@@ -5,7 +5,7 @@
 // naming convention and patterns of other interfaces.
 /* -------------------------------------------------------------------------- */
 #pragma once
-#include <driver_main/base.hpp>
+#include <driver/m_base.hpp>
 
 /* ---------------------------- State and Config ---------------------------- */
 struct BaroConfig { 
@@ -21,7 +21,7 @@ struct BaroConfig {
     float rate_seconds = 1.0f / rate_hz;
     float next_read = 0.0f;
     float bias = 0.0f; 
-} driver_baro_config;
+} hwm_config_baro;
 
 /* ------------------------------- Structures ------------------------------- */
 struct BaroData { float altitude; };
@@ -29,20 +29,20 @@ struct BaroData { float altitude; };
 
 /* ------------------------ Interface Implementations ----------------------- */
 // No intiailization code for now.
-void hw_baro_init() {}
+void hwm_baro_init() {}
 
 // Returns if at least one reading is on the sensor based off the time of last
 // read and the expected read frequency.
-bool hw_baro_ready() {
-    return seconds_us() > driver_baro_config.next_read;
+bool hwm_baro_ready() {
+    return seconds_us() > hwm_config_baro.next_read;
 }
 
 // Return current altitude reading from sensor, halts for conversion time.
-BaroData hw_baro_read() {
+BaroData hwm_baro_read() {
     // Altimeter OSR and Channel setting command,
     // followed by altitude read command.
     Wire.beginTransmission(0x77);
-    Wire.write(0b01000000 | driver_baro_config.BARO_OSR_256);
+    Wire.write(0b01000000 | hwm_config_baro.BARO_OSR_256);
     Wire.endTransmission(true);
     Wire.beginTransmission(0x77);
     Wire.write(0x31);
@@ -57,16 +57,16 @@ BaroData hw_baro_read() {
     data[2] = Wire.read();
     BaroData output;
     output.altitude = (float)((data[0] & 0x0F)*65536 + (data[1]*256) + data[2]) / 100.0f;
-    output.altitude += driver_baro_config.bias;
+    output.altitude += hwm_config_baro.bias;
     
     // Reset ready timer.
-    driver_baro_config.next_read = seconds_us() + driver_baro_config.rate_seconds;
+    hwm_config_baro.next_read = seconds_us() + hwm_config_baro.rate_seconds;
 
     // Return.
     return output;
 }
 
 // Sets "zero" altitude for the altimeter.
-void hw_baro_set_calibration(float altitude) {
-    driver_baro_config.bias = -altitude;
+void hwm_baro_set_calibration(float altitude) {
+    hwm_config_baro.bias = -altitude;
 }
